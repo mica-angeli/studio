@@ -414,13 +414,20 @@ function createPickingMaterial(texture: THREE.DataTexture): THREE.ShaderMaterial
 }
 
 function occupancyGridHasTransparency(settings: LayerSettingsOccupancyGrid): boolean {
-  stringToRgba(tempMinColor, settings.minColor);
-  stringToRgba(tempMaxColor, settings.maxColor);
-  stringToRgba(tempUnknownColor, settings.unknownColor);
-  stringToRgba(tempInvalidColor, settings.invalidColor);
-  return (
-    tempMinColor.a < 1 || tempMaxColor.a < 1 || tempInvalidColor.a < 1 || tempUnknownColor.a < 1
-  );
+  if (settings.colorMode == "costmap")
+  {
+    return true;
+  }
+  else
+  {
+    stringToRgba(tempMinColor, settings.minColor);
+    stringToRgba(tempMaxColor, settings.maxColor);
+    stringToRgba(tempUnknownColor, settings.unknownColor);
+    stringToRgba(tempInvalidColor, settings.invalidColor);
+    return (
+      tempMinColor.a < 1 || tempMaxColor.a < 1 || tempInvalidColor.a < 1 || tempUnknownColor.a < 1
+    );
+  }
 }
 
 function srgbToLinearUint8(color: ColorRGBA): void {

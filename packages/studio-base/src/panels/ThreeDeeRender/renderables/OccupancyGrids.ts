@@ -456,7 +456,7 @@ function normalizeOccupancyGrid(message: PartialMessage<OccupancyGrid>): Occupan
 let costmapPalette: [number, number, number, number][] | undefined;
 
 function costmapColorCached(output: ColorRGBA, value: number) {
-  const unsignedValue = value > 0 ? value : value + 255;
+  const unsignedValue = value >= 0 ? value : value + 255;
   if (unsignedValue < 0 || unsignedValue > 255) {
     output.r = 0;
     output.g = 0;

@@ -414,12 +414,9 @@ function createPickingMaterial(texture: THREE.DataTexture): THREE.ShaderMaterial
 }
 
 function occupancyGridHasTransparency(settings: LayerSettingsOccupancyGrid): boolean {
-  if (settings.colorMode == "costmap")
-  {
+  if (settings.colorMode === "costmap") {
     return true;
-  }
-  else
-  {
+  } else {
     stringToRgba(tempMinColor, settings.minColor);
     stringToRgba(tempMaxColor, settings.maxColor);
     stringToRgba(tempUnknownColor, settings.unknownColor);

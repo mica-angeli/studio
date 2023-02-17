@@ -127,7 +127,15 @@ export class OccupancyGrids extends SceneExtension<OccupancyGridRenderable> {
         };
       } else {
         const paletteFields: SettingsTreeFields = {
-          alpha: { label: "Alpha", input: "number", value: config.alpha ?? DEFAULT_ALPHA, min: 0.0, max: 1.0, step: 0.1, placeholder: "auto"},
+          alpha: {
+            label: "Alpha",
+            input: "number",
+            value: config.alpha ?? DEFAULT_ALPHA,
+            min: 0.0,
+            max: 1.0,
+            step: 0.1,
+            placeholder: "auto",
+          },
         };
         fields = {
           ...fields,
@@ -493,16 +501,14 @@ function paletteColorCached(output: ColorRGBA, value: number, color_mode: ColorM
     }
     palette = rawPalette;
   } else {
-    throw new Error(`Unsupported palette name ${color_mode}`);
+    throw new Error(`Unsupported color mode ${color_mode}`);
   }
 
-  if (palette) {
-    const colorRaw = palette[Math.trunc(unsignedValue)]!;
-    output.r = colorRaw[0];
-    output.g = colorRaw[1];
-    output.b = colorRaw[2];
-    output.a = colorRaw[3];
-  }
+  const colorRaw = palette[Math.trunc(unsignedValue)]!;
+  output.r = colorRaw[0];
+  output.g = colorRaw[1];
+  output.b = colorRaw[2];
+  output.a = colorRaw[3];
 }
 
 // Based off of rviz map implementation

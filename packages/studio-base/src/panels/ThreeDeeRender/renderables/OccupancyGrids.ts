@@ -23,7 +23,7 @@ import { ColorRGBA, OccupancyGrid, OCCUPANCY_GRID_DATATYPES } from "../ros";
 import { BaseSettings } from "../settings";
 import { topicIsConvertibleToSchema } from "../topicIsConvertibleToSchema";
 
-type ColorModes = "custom" | "costmap";
+type ColorModes = "custom" | "costmap" | "raw";
 
 export type LayerSettingsOccupancyGrid = BaseSettings & {
   frameLocked: boolean;
@@ -103,6 +103,7 @@ export class OccupancyGrids extends SceneExtension<OccupancyGridRenderable> {
           options: [
             { label: "Custom", value: "custom" },
             { label: "Costmap", value: "costmap" },
+            { label: "Raw", value: "raw" },
           ],
         },
       };
@@ -358,7 +359,7 @@ function updateTexture(
         rgba[offset + 3] = tempInvalidColor.a;
       }
     } else {
-      costmapColorCached(tempColor, value);
+      paletteColorCached(tempColor, value, settings.colorMode);
       rgba[offset + 0] = tempColor.r;
       rgba[offset + 1] = tempColor.g;
       rgba[offset + 2] = tempColor.b;
@@ -414,9 +415,7 @@ function createPickingMaterial(texture: THREE.DataTexture): THREE.ShaderMaterial
 }
 
 function occupancyGridHasTransparency(settings: LayerSettingsOccupancyGrid): boolean {
-  if (settings.colorMode === "costmap") {
-    return true;
-  } else {
+  if (settings.colorMode === "custom") {
     stringToRgba(tempMinColor, settings.minColor);
     stringToRgba(tempMaxColor, settings.maxColor);
     stringToRgba(tempUnknownColor, settings.unknownColor);
@@ -424,6 +423,8 @@ function occupancyGridHasTransparency(settings: LayerSettingsOccupancyGrid): boo
     return (
       tempMinColor.a < 1 || tempMaxColor.a < 1 || tempInvalidColor.a < 1 || tempUnknownColor.a < 1
     );
+  } else {
+    return true;
   }
 }
 
@@ -451,8 +452,9 @@ function normalizeOccupancyGrid(message: PartialMessage<OccupancyGrid>): Occupan
 }
 
 let costmapPalette: [number, number, number, number][] | undefined;
+let rawPalette: [number, number, number, number][] | undefined;
 
-function costmapColorCached(output: ColorRGBA, value: number) {
+function paletteColorCached(output: ColorRGBA, value: number, color_mode: ColorModes) {
   const unsignedValue = value >= 0 ? value : value + 255;
   if (unsignedValue < 0 || unsignedValue > 255) {
     output.r = 0;
@@ -460,15 +462,29 @@ function costmapColorCached(output: ColorRGBA, value: number) {
     output.b = 0;
     output.a = 0;
   }
-  if (!costmapPalette) {
-    costmapPalette = createCostmapPalette();
+
+  let palette: [number, number, number, number][] | undefined;
+  if (color_mode === "costmap") {
+    if (!costmapPalette) {
+      costmapPalette = createCostmapPalette();
+    }
+    palette = costmapPalette;
+  } else if (color_mode === "raw") {
+    if (!rawPalette) {
+      rawPalette == createRawPalette();
+    }
+    palette = rawPalette;
+  } else {
+    throw new Error(`Unsupported palette name ${color_mode}`);
   }
 
-  const colorRaw = costmapPalette[Math.trunc(unsignedValue)]!;
-  output.r = colorRaw[0];
-  output.g = colorRaw[1];
-  output.b = colorRaw[2];
-  output.a = colorRaw[3];
+  if (palette) {
+    const colorRaw = palette[Math.trunc(unsignedValue)]!;
+    output.r = colorRaw[0];
+    output.g = colorRaw[1];
+    output.b = colorRaw[2];
+    output.a = colorRaw[3];
+  }
 }
 
 // Based off of rviz costmap implementation
@@ -502,5 +518,19 @@ function createCostmapPalette() {
 
   // legal -1 value is tasteful blueish greenish grayish color
   palette[index++] = [112, 137, 134, 255];
+  return palette;
+}
+
+// Based off of rviz raw implementation
+// https://github.com/ros-visualization/rviz/blob/1f622b8c95b8e188841b5505db2f97394d3e9c6c/src/rviz/default_plugin/map_display.cpp#L377
+function createRawPalette() {
+  let index = 0;
+  const palette = new Array(256).fill([0, 0, 0, 0]);
+
+  // Standard gray map palette values
+  for (let i = 0; i < 256; i++) {
+    palette[index++] = [i, i, i, 255];
+  }
+
   return palette;
 }

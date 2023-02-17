@@ -471,7 +471,7 @@ function paletteColorCached(output: ColorRGBA, value: number, color_mode: ColorM
     palette = costmapPalette;
   } else if (color_mode === "raw") {
     if (!rawPalette) {
-      rawPalette == createRawPalette();
+      rawPalette = createRawPalette();
     }
     palette = rawPalette;
   } else {

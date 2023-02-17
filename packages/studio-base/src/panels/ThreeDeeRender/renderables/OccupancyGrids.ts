@@ -105,8 +105,8 @@ export class OccupancyGrids extends SceneExtension<OccupancyGridRenderable> {
           value: config.colorMode ?? "custom",
           options: [
             { label: "Custom", value: "custom" },
-            { label: "Costmap", value: "costmap" },
             { label: "Map", value: "map" },
+            { label: "Costmap", value: "costmap" },
             { label: "Raw", value: "raw" },
           ],
         },

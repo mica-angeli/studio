@@ -32,6 +32,7 @@ export type LayerSettingsOccupancyGrid = BaseSettings & {
   unknownColor: string;
   invalidColor: string;
   colorMode: ColorModes;
+  alpha: number;
 };
 
 const INVALID_OCCUPANCY_GRID = "INVALID_OCCUPANCY_GRID";
@@ -40,6 +41,7 @@ const DEFAULT_MIN_COLOR = { r: 1, g: 1, b: 1, a: 1 }; // white
 const DEFAULT_MAX_COLOR = { r: 0, g: 0, b: 0, a: 1 }; // black
 const DEFAULT_UNKNOWN_COLOR = { r: 0.5, g: 0.5, b: 0.5, a: 1 }; // gray
 const DEFAULT_INVALID_COLOR = { r: 1, g: 0, b: 1, a: 1 }; // magenta
+const DEFAULT_ALPHA = 1.0;
 
 const DEFAULT_MIN_COLOR_STR = rgbaToCssString(DEFAULT_MIN_COLOR);
 const DEFAULT_MAX_COLOR_STR = rgbaToCssString(DEFAULT_MAX_COLOR);
@@ -54,6 +56,7 @@ const DEFAULT_SETTINGS: LayerSettingsOccupancyGrid = {
   maxColor: DEFAULT_MAX_COLOR_STR,
   unknownColor: DEFAULT_UNKNOWN_COLOR_STR,
   invalidColor: DEFAULT_INVALID_COLOR_STR,
+  alpha: DEFAULT_ALPHA,
 };
 
 export type OccupancyGridUserData = BaseUserData & {
@@ -121,6 +124,14 @@ export class OccupancyGrids extends SceneExtension<OccupancyGridRenderable> {
         fields = {
           ...fields,
           ...customFields,
+        };
+      } else {
+        const paletteFields: SettingsTreeFields = {
+          alpha: { label: "Alpha", input: "number", value: config.alpha ?? DEFAULT_ALPHA, min: 0.0, max: 1.0, step: 0.1, placeholder: "auto"},
+        };
+        fields = {
+          ...fields,
+          ...paletteFields,
         };
       }
 
@@ -364,7 +375,7 @@ function updateTexture(
       rgba[offset + 0] = tempColor.r;
       rgba[offset + 1] = tempColor.g;
       rgba[offset + 2] = tempColor.b;
-      rgba[offset + 3] = tempColor.a;
+      rgba[offset + 3] = tempColor.a * settings.alpha;
     }
   }
 
